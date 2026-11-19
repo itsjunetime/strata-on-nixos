@@ -42,7 +42,7 @@
       strata-sycl-jit = strata-engine null; # Arc A-series / Alchemist
       strata-sycl = strata-sycl-bmg-g21; # default
 
-      # Native drop-in for sycl/serve/strata-sycl.sh
+      # Native drop-in for engine/sycl/serve/strata-sycl.sh
       shim = pkgs.writeTextFile {
         name = "strata-sycl.sh";
         executable = true;
@@ -55,12 +55,12 @@
       strata-src = pkgs.runCommand "strata-src-${strata-sycl.version}" { } ''
         cp -r ${inputs.strata} $out
         chmod -R u+w $out
-        mv "$out/sycl/serve/strata-sycl.sh" "$out/sycl/serve/strata-sycl.sh.docker"
-        cp ${shim} "$out/sycl/serve/strata-sycl.sh"
-        chmod +x "$out/sycl/serve/strata-sycl.sh"
-        mkdir -p "$out/build-sycl-aot"
+        mv "$out/engine/sycl/serve/strata-sycl.sh" "$out/engine/sycl/serve/strata-sycl.sh.docker"
+        cp ${shim} "$out/engine/sycl/serve/strata-sycl.sh"
+        chmod +x "$out/engine/sycl/serve/strata-sycl.sh"
+        mkdir -p "$out/engine/build-sycl-aot"
         printf '{"version":"%s","source":"local","lib_dirs":[]}\n' ${lib.escapeShellArg strata-sycl.version} \
-          > "$out/build-sycl-aot/BUILD.json"
+          > "$out/engine/build-sycl-aot/BUILD.json"
       '';
 
       # Copy the prepared source into a writable checkout and point it at the Nix engine,
@@ -106,17 +106,17 @@
           else
             # Point an existing checkout at the native runner, keeping upstream's
             # Docker wrapper the first time.
-            if [ ! -e "$dest/sycl/serve/strata-sycl.sh.docker" ] \
-              && ! cmp -s ${strata-src}/sycl/serve/strata-sycl.sh "$dest/sycl/serve/strata-sycl.sh"; then
-              mv "$dest/sycl/serve/strata-sycl.sh" "$dest/sycl/serve/strata-sycl.sh.docker"
+            if [ ! -e "$dest/engine/sycl/serve/strata-sycl.sh.docker" ] \
+              && ! cmp -s ${strata-src}/engine/sycl/serve/strata-sycl.sh "$dest/engine/sycl/serve/strata-sycl.sh"; then
+              mv "$dest/engine/sycl/serve/strata-sycl.sh" "$dest/engine/sycl/serve/strata-sycl.sh.docker"
             fi
-            cp -f ${strata-src}/sycl/serve/strata-sycl.sh "$dest/sycl/serve/strata-sycl.sh"
-            cp -f ${strata-src}/build-sycl-aot/BUILD.json "$dest/build-sycl-aot/BUILD.json"
+            cp -f ${strata-src}/engine/sycl/serve/strata-sycl.sh "$dest/engine/sycl/serve/strata-sycl.sh"
+            cp -f ${strata-src}/engine/build-sycl-aot/BUILD.json "$dest/engine/build-sycl-aot/BUILD.json"
             echo "strata: refreshed $dest"
           fi
 
-          mkdir -p "$dest/build-sycl-aot"
-          ln -sfn "$engine" "$dest/build-sycl-aot/strata"
+          mkdir -p "$dest/engine/build-sycl-aot"
+          ln -sfn "$engine" "$dest/engine/build-sycl-aot/strata"
 
           # setup.py's get_llama_cpp() wants third_party/llama.cpp (ggml +
           # gguf-py) and would otherwise download it; hand it the pinned input.
@@ -124,7 +124,7 @@
           rm -rf "$dest/third_party/llama.cpp"
           ln -s ${inputs.llama-cpp} "$dest/third_party/llama.cpp"
 
-          echo "        engine: build-sycl-aot/strata -> $engine"
+          echo "        engine: engine/build-sycl-aot/strata -> $engine"
           echo "        ggml:   third_party/llama.cpp -> ${inputs.llama-cpp}"
           echo
           echo "Next:"

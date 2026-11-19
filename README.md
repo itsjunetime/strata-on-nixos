@@ -87,7 +87,7 @@ materialises the flake's pinned Strata source into a writable `./strata`, pointi
 a few things at the Nix inputs:
 
 ```text
-sycl/serve/strata-sycl.sh -> native runner (upstream Docker script kept as .docker)
+engine/sycl/serve/strata-sycl.sh -> native runner (upstream Docker script kept as .docker)
 build-sycl-aot/strata     -> <engine from your last build>/bin/strata
 build-sycl-aot/BUILD.json -> engine version, so the server can report it
 third_party/llama.cpp     -> the pinned llama.cpp input (setup.py would fetch it otherwise)

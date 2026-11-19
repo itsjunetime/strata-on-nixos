@@ -27,7 +27,7 @@ let
   # `.*project...` builtins.match backtracks over the whole file and overflows.
   version =
     let
-      lines = lib.splitString "\n" (builtins.readFile "${strata}/CMakeLists.txt");
+      lines = lib.splitString "\n" (builtins.readFile "${strata}/engine/CMakeLists.txt");
       hit = lib.findFirst (l: builtins.match "project\\(strata VERSION.*" l != null) null lines;
       m = if hit == null then null else builtins.match "project\\(strata VERSION ([0-9.]+).*" hit;
     in
@@ -94,6 +94,7 @@ intel-oneapi-toolkit.stdenv.mkDerivation (finalAttrs: {
   # the engine lands at build-sycl/strata rather than build-sycl/sycl/strata.
   configurePhase = ''
     runHook preConfigure
+    cd engine
     cmake -S sycl -B build-sycl -G Ninja \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_COMPILER=icx \
